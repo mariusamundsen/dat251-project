@@ -1,6 +1,5 @@
 # dat251-project
 
-Secret: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
 
 
 Commit meldingene må se slik ut for riktig versjonering:
