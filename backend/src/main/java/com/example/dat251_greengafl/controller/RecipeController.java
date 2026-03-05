@@ -12,7 +12,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/recipe")
+@RequestMapping("/api/recipe")
 public class RecipeController {
 
     @Autowired
