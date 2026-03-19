@@ -43,7 +43,7 @@ function App() {
       <main className="hero-layout">
         <section className="hero-copy">
           <p className="eyebrow">Dinner inspiration, made practical</p>
-          <h1>Find a dinner you actually want to cook tonight.</h1>
+          <h1>Dinner ideas that fit your evening.</h1>
           <p className="hero-text">
             Greengafl helps users discover meal ideas based on dietary preferences,
             restrictions, cooking difficulty, and available time. It starts simple, then
@@ -55,14 +55,6 @@ function App() {
             recommendation features.
           </p>
 
-          <div className="hero-actions">
-            <button type="button" className="primary-button large-button">
-              Register
-            </button>
-            <button type="button" className="ghost-button large-button">
-              Log in
-            </button>
-          </div>
         </section>
 
         <section className="visual-panel" aria-label="App preview">

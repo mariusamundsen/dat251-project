@@ -5,7 +5,7 @@ test('renders greengafl landing page actions', () => {
   render(<App />);
 
   expect(
-    screen.getByRole('heading', { name: /find a dinner you actually want to cook tonight/i })
+    screen.getByRole('heading', { name: /dinner ideas that fit your evening/i })
   ).toBeInTheDocument();
   expect(screen.getAllByRole('button', { name: /register/i }).length).toBeGreaterThan(0);
   expect(screen.getAllByRole('button', { name: /log in/i }).length).toBeGreaterThan(0);
