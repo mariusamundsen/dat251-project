@@ -59,7 +59,6 @@ public class UserService {
         user.setId(entity.getId());
         user.setUsername(entity.getUsername());
         user.setEmail(entity.getEmail());
-        user.setPassword(entity.getPassword());
         user.setDietaryPreferences(entity.getDietaryPreferences());
         return user;
     }
