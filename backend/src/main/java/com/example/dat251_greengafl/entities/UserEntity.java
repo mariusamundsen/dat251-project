@@ -14,8 +14,13 @@ public class UserEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(unique = true, nullable = false)
     private String username;
+
+    @Column(unique = true, nullable = false)
     private String email;
+
+    @Column(nullable = false)
     private String password;
 
     @ElementCollection(fetch = FetchType.EAGER)
@@ -27,7 +32,6 @@ public class UserEntity {
     @Column(name = "preference")
     private Set<DietaryPreference> dietaryPreferences = new HashSet<>();
 
-    // nødvendig for JPA
     public UserEntity() {}
 
     public UserEntity(String username, String email, String password) {
@@ -36,10 +40,12 @@ public class UserEntity {
         this.password = password;
     }
 
-    // getters og setters
-
     public Long getId() {
         return id;
+    }
+
+    public void setId(Long id) {
+    this.id = id;
     }
 
     public String getUsername() {

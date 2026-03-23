@@ -65,11 +65,12 @@ public class UserService {
     }
 
     private UserEntity mapToEntity(User user) {
-        UserEntity entity = new UserEntity();
-        entity.setUsername(user.getUsername());
-        entity.setEmail(user.getEmail());
-        entity.setPassword(user.getPassword());
-        entity.setDietaryPreferences(user.getDietaryPreferences());
-        return entity;
+    UserEntity entity = new UserEntity();
+    entity.setId(user.getId());
+    entity.setUsername(user.getUsername());
+    entity.setEmail(user.getEmail());
+    entity.setPassword(user.getPassword());
+    entity.setDietaryPreferences(user.getDietaryPreferences());
+    return entity;
     }
 }
