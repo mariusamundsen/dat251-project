@@ -10,19 +10,30 @@ export default function You() {
   const [authData, setAuthData] = useState(null);
 
   useEffect(() => {
+    let cancelled = false;
+
     async function assertLoggedIn() {
       try {
         const { ok, data } = await getAuthStatus();
-        if (!ok || !data.authenticated) {
-          navigate("/login", { replace: true });
+
+        if (!ok || !data?.authenticated) {
+          if (!cancelled) navigate("/login", { replace: true });
+          return; // stop here, do not set state after redirect
         }
-        setAuthData(data);
+
+        if (!cancelled) {
+          setAuthData(data);
+        }
       } catch {
-        navigate("/login", { replace: true });
+        if (!cancelled) navigate("/login", { replace: true });
       }
     }
 
     assertLoggedIn();
+
+    return () => {
+      cancelled = true;
+    };
   }, [navigate]);
 
   async function handleLogout() {
