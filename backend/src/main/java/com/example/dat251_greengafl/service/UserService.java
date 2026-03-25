@@ -47,6 +47,15 @@ public class UserService implements UserDetailsService {
         return userRepo.findByUsername(username).map(this::toModel);
     }
 
+    public boolean authenticate(String username, String raw) {
+        if (username == null || raw == null) {
+            return false;
+        }
+        return userRepo.findByUsername(username)
+                .map(userEntity -> passwordEncoder.matches(raw, userEntity.getPassword()))
+                .orElse(false);
+    }
+
     public User register(User user){
         if (user.getDietaryPreferences() == null) {
             user.setDietaryPreferences(new HashSet<>());
