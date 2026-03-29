@@ -28,15 +28,14 @@ function App() {
 
   const [recipes, setRecipes] = useState<Recipe[]>([]);
 
-  const conf = new Configuration({
-    basePath: "http://localhost:8080",
-    baseOptions: {
-      withCredentials: true,
-    },
-  });
-  const recipeController = new RecipeControllerApi(conf);
-
   useEffect(() => {
+    const conf = new Configuration({
+      basePath: "http://localhost:8080",
+      baseOptions: {
+        withCredentials: true,
+      },
+    });
+    const recipeController = new RecipeControllerApi(conf);
     async function load() {
       try {
         const { data } = await recipeController.findAll1();

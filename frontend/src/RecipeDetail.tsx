@@ -7,15 +7,15 @@ import "./recipeDetail.css";
 export default function RecipeDetail() {
   const { id } = useParams();
   const [recipe, setRecipe] = useState<Recipe | null>(null);
-  const conf = new Configuration({
-    basePath: "http://localhost:8080",
-    baseOptions: {
-      withCredentials: true,
-    },
-  });
-  const recipeController = new RecipeControllerApi(conf);
 
   useEffect(() => {
+    const conf = new Configuration({
+      basePath: "http://localhost:8080",
+      baseOptions: {
+        withCredentials: true,
+      },
+    });
+    const recipeController = new RecipeControllerApi(conf);
     async function loadRecipe() {
       try {
         const { data } = await recipeController.findById1(id ?? "");
