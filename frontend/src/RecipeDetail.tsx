@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { Configuration } from "./api/configuration";
 import { Recipe, RecipeControllerApi } from "./api/api";
+import "./recipeDetail.css";
 
 export default function RecipeDetail() {
   const { id } = useParams();
@@ -29,27 +30,39 @@ export default function RecipeDetail() {
   if (!recipe) return <p>Loading...</p>;
 
   return (
-    <div style={{ padding: "2rem" }}>
-      <h1>{recipe.name}</h1>
+    <div className="recipe-detail">
+      <div className="recipe-header">
+        {/* Display picture if available, otherwise placeholder */}
+        <img
+          src={
+            (recipe as any).picture ||
+            "https://via.placeholder.com/400x250?text=No+Image"
+          }
+          alt={recipe.name}
+          className="recipe-image"
+        />
+        <h1>{recipe.name}</h1>
+        <div className="recipe-meta">
+          <span>Cooking time: {recipe.cookingTime ?? "N/A"} min</span>
+          <span>Difficulty: {recipe.difficulty ?? "N/A"}</span>
+        </div>
+      </div>
 
-      <p>
-        <strong>Cooking time:</strong> {recipe.cookingTime} minutes
-      </p>
-      <p>
-        <strong>Difficulty:</strong> {recipe.difficulty}
-      </p>
+      <div className="recipe-section">
+        <h2>Ingredients</h2>
+        <ul className="ingredients-list">
+          {recipe.ingredients?.map((ri) => (
+            <li key={ri.id}>
+              {ri.quantity} {ri.unit} {ri.ingredient?.name}
+            </li>
+          ))}
+        </ul>
+      </div>
 
-      <h2>Ingredients</h2>
-      <ul>
-        {recipe.ingredients?.map((ri) => (
-          <li key={ri.id}>
-            {ri.quantity} {ri.unit} {ri.ingredient?.name}
-          </li>
-        ))}
-      </ul>
-
-      <h2>Instructions</h2>
-      <p>{recipe.instructions}</p>
+      <div className="recipe-section">
+        <h2>Instructions</h2>
+        <p className="instructions">{recipe.instructions}</p>
+      </div>
     </div>
   );
 }
