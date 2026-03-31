@@ -1,84 +1,98 @@
-import { useState } from 'react';
-import '../App.css';
+import { useState } from "react";
+import "./App.css";
 
-const mockRecipes = [
+type MockRecipe = {
+  id: number;
+  title: string;
+  description: string;
+  time: number;
+  difficulty: "Easy" | "Medium" | "Hard";
+  preferences: string[];
+  restrictions: string[];
+  tags: string[];
+};
+
+const mockRecipes: MockRecipe[] = [
   {
     id: 1,
-    title: 'Creamy Tomato Rigatoni',
-    description: 'A comforting pasta dish with tomato sauce, garlic, and parmesan.',
+    title: "Creamy Tomato Rigatoni",
+    description:
+      "A comforting pasta dish with tomato sauce, garlic, and parmesan.",
     time: 25,
-    difficulty: 'Easy',
-    preferences: ['Vegetarian'],
-    restrictions: ['Nut Free'],
-    tags: ['Vegetarian', 'Quick'],
+    difficulty: "Easy",
+    preferences: ["Vegetarian"],
+    restrictions: ["Nut Free"],
+    tags: ["Vegetarian", "Quick"],
   },
   {
     id: 2,
-    title: 'Lemon Salmon Bowl',
-    description: 'Fresh salmon with rice, cucumber, avocado, and lemon dressing.',
+    title: "Lemon Salmon Bowl",
+    description:
+      "Fresh salmon with rice, cucumber, avocado, and lemon dressing.",
     time: 30,
-    difficulty: 'Medium',
-    preferences: ['Pescetarian', 'High Protein'],
-    restrictions: ['Gluten Free'],
-    tags: ['High Protein', 'Fresh'],
+    difficulty: "Medium",
+    preferences: ["Pescetarian", "High Protein"],
+    restrictions: ["Gluten Free"],
+    tags: ["High Protein", "Fresh"],
   },
   {
     id: 3,
-    title: 'Spicy Chickpea Curry',
-    description: 'A warming chickpea curry with coconut milk and spinach.',
+    title: "Spicy Chickpea Curry",
+    description: "A warming chickpea curry with coconut milk and spinach.",
     time: 35,
-    difficulty: 'Easy',
-    preferences: ['Vegan'],
-    restrictions: ['Dairy Free'],
-    tags: ['Vegan', 'Comfort'],
+    difficulty: "Easy",
+    preferences: ["Vegan"],
+    restrictions: ["Dairy Free"],
+    tags: ["Vegan", "Comfort"],
   },
   {
     id: 4,
-    title: 'Chicken Teriyaki Noodles',
-    description: 'Savory noodles with chicken, vegetables, and teriyaki sauce.',
+    title: "Chicken Teriyaki Noodles",
+    description:
+      "Savory noodles with chicken, vegetables, and teriyaki sauce.",
     time: 20,
-    difficulty: 'Easy',
-    preferences: ['High Protein'],
-    restrictions: ['Nut Free'],
-    tags: ['Quick', 'Popular'],
+    difficulty: "Easy",
+    preferences: ["High Protein"],
+    restrictions: ["Nut Free"],
+    tags: ["Quick", "Popular"],
   },
   {
     id: 5,
-    title: 'Mushroom Risotto',
-    description: 'Creamy risotto with mushrooms, onion, and parmesan.',
+    title: "Mushroom Risotto",
+    description: "Creamy risotto with mushrooms, onion, and parmesan.",
     time: 40,
-    difficulty: 'Medium',
-    preferences: ['Vegetarian'],
-    restrictions: ['Nut Free'],
-    tags: ['Vegetarian', 'Cozy'],
+    difficulty: "Medium",
+    preferences: ["Vegetarian"],
+    restrictions: ["Nut Free"],
+    tags: ["Vegetarian", "Cozy"],
   },
   {
     id: 6,
-    title: 'Tofu Stir Fry',
-    description: 'Crispy tofu with vegetables and soy-ginger sauce.',
+    title: "Tofu Stir Fry",
+    description: "Crispy tofu with vegetables and soy-ginger sauce.",
     time: 20,
-    difficulty: 'Easy',
-    preferences: ['Vegan', 'High Protein'],
-    restrictions: ['Dairy Free'],
-    tags: ['Vegan', 'Quick'],
+    difficulty: "Easy",
+    preferences: ["Vegan", "High Protein"],
+    restrictions: ["Dairy Free"],
+    tags: ["Vegan", "Quick"],
   },
 ];
 
-function RecipePage() {
-  const [preferences, setPreferences] = useState('All');
-  const [restrictions, setRestrictions] = useState('None');
-  const [difficulty, setDifficulty] = useState('All');
+export default function RecipePage() {
+  const [preferences, setPreferences] = useState("All");
+  const [restrictions, setRestrictions] = useState("None");
+  const [difficulty, setDifficulty] = useState("All");
   const [maxTime, setMaxTime] = useState(30);
-  const [results, setResults] = useState([]);
+  const [results, setResults] = useState<MockRecipe[]>([]);
 
   function getSuggestions() {
     const filteredRecipes = mockRecipes.filter((recipe) => {
       const matchesPreferences =
-        preferences === 'All' || recipe.preferences.includes(preferences);
+        preferences === "All" || recipe.preferences.includes(preferences);
       const matchesRestrictions =
-        restrictions === 'None' || recipe.restrictions.includes(restrictions);
+        restrictions === "None" || recipe.restrictions.includes(restrictions);
       const matchesDifficulty =
-        difficulty === 'All' || recipe.difficulty === difficulty;
+        difficulty === "All" || recipe.difficulty === difficulty;
       const matchesTime = recipe.time <= maxTime;
 
       return (
@@ -172,10 +186,18 @@ function RecipePage() {
           </div>
 
           <div className="recipe-actions">
-            <button type="button" className="primary-button" onClick={getSuggestions}>
+            <button
+              type="button"
+              className="primary-button"
+              onClick={getSuggestions}
+            >
               Get suggestions
             </button>
-            <button type="button" className="ghost-button" onClick={getRandomRecipe}>
+            <button
+              type="button"
+              className="ghost-button"
+              onClick={getRandomRecipe}
+            >
               I&apos;m feeling lucky
             </button>
           </div>
@@ -186,8 +208,8 @@ function RecipePage() {
             <h2>Recipe results</h2>
             <p>
               {results.length === 0
-                ? 'No recipes generated yet.'
-                : `Showing ${results.length} recipe${results.length > 1 ? 's' : ''}.`}
+                ? "No recipes generated yet."
+                : `Showing ${results.length} recipe${results.length > 1 ? "s" : ""}.`}
             </p>
           </div>
 
@@ -221,5 +243,3 @@ function RecipePage() {
     </main>
   );
 }
-
-export default RecipePage;
