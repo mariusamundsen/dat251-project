@@ -1,114 +1,148 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import "./App.css";
+import { getAuthStatus } from "./auth";
 
-type MockRecipe = {
-  id: number;
-  title: string;
-  description: string;
-  time: number;
-  difficulty: "Easy" | "Medium" | "Hard";
-  preferences: string[];
-  restrictions: string[];
-  tags: string[];
+type BackendRecipe = {
+  name: string;
+  instructions: string;
+  cookingTime: number;
+  difficulty: "EASY" | "MEDIUM" | "HARD";
+  cuisine?: string;
+  imageUrl?: string;
 };
 
-const mockRecipes: MockRecipe[] = [
-  {
-    id: 1,
-    title: "Creamy Tomato Rigatoni",
-    description:
-      "A comforting pasta dish with tomato sauce, garlic, and parmesan.",
-    time: 25,
-    difficulty: "Easy",
-    preferences: ["Vegetarian"],
-    restrictions: ["Nut Free"],
-    tags: ["Vegetarian", "Quick"],
-  },
-  {
-    id: 2,
-    title: "Lemon Salmon Bowl",
-    description:
-      "Fresh salmon with rice, cucumber, avocado, and lemon dressing.",
-    time: 30,
-    difficulty: "Medium",
-    preferences: ["Pescetarian", "High Protein"],
-    restrictions: ["Gluten Free"],
-    tags: ["High Protein", "Fresh"],
-  },
-  {
-    id: 3,
-    title: "Spicy Chickpea Curry",
-    description: "A warming chickpea curry with coconut milk and spinach.",
-    time: 35,
-    difficulty: "Easy",
-    preferences: ["Vegan"],
-    restrictions: ["Dairy Free"],
-    tags: ["Vegan", "Comfort"],
-  },
-  {
-    id: 4,
-    title: "Chicken Teriyaki Noodles",
-    description:
-      "Savory noodles with chicken, vegetables, and teriyaki sauce.",
-    time: 20,
-    difficulty: "Easy",
-    preferences: ["High Protein"],
-    restrictions: ["Nut Free"],
-    tags: ["Quick", "Popular"],
-  },
-  {
-    id: 5,
-    title: "Mushroom Risotto",
-    description: "Creamy risotto with mushrooms, onion, and parmesan.",
-    time: 40,
-    difficulty: "Medium",
-    preferences: ["Vegetarian"],
-    restrictions: ["Nut Free"],
-    tags: ["Vegetarian", "Cozy"],
-  },
-  {
-    id: 6,
-    title: "Tofu Stir Fry",
-    description: "Crispy tofu with vegetables and soy-ginger sauce.",
-    time: 20,
-    difficulty: "Easy",
-    preferences: ["Vegan", "High Protein"],
-    restrictions: ["Dairy Free"],
-    tags: ["Vegan", "Quick"],
-  },
-];
+const API_BASE = "http://localhost:8080";
 
-export default function RecipePage() {
-  const [preferences, setPreferences] = useState("All");
-  const [restrictions, setRestrictions] = useState("None");
+function toDifficultyLabel(difficulty: BackendRecipe["difficulty"]) {
+  return difficulty.charAt(0) + difficulty.slice(1).toLowerCase();
+}
+
+type RecipePageProps = {
+  requireAuth?: boolean;
+};
+
+export default function RecipePage({
+  requireAuth = true,
+}: RecipePageProps) {
+  const navigate = useNavigate();
+  const [recipes, setRecipes] = useState<BackendRecipe[]>([]);
+  const [cuisine, setCuisine] = useState("All");
   const [difficulty, setDifficulty] = useState("All");
   const [maxTime, setMaxTime] = useState(30);
-  const [results, setResults] = useState<MockRecipe[]>([]);
+  const [results, setResults] = useState<BackendRecipe[]>([]);
+  const [authorized, setAuthorized] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadRecipes() {
+      try {
+        if (requireAuth) {
+          const authData = await getAuthStatus();
+          if (!authData?.authenticated) {
+            if (!cancelled) {
+              navigate("/login", { replace: true });
+            }
+            return;
+          }
+        }
+
+        if (!cancelled) {
+          setAuthorized(true);
+        }
+
+        setLoading(true);
+        setError("");
+
+        const response = await fetch(`${API_BASE}/api/public/recipes`);
+        if (!response.ok) {
+          throw new Error(`Request failed with status ${response.status}`);
+        }
+
+        const data: BackendRecipe[] = await response.json();
+
+        if (!cancelled) {
+          setRecipes(data);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          if (requireAuth) {
+            navigate("/login", { replace: true });
+          } else {
+            setError("Could not load recipes from the backend.");
+          }
+          console.error(err);
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    }
+
+    loadRecipes();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [navigate, requireAuth]);
+
+  if (requireAuth && !authorized && loading) {
+    return (
+      <main className="recipe-page">
+        <section className="recipe-page-header">
+          <h1>Checking your session...</h1>
+        </section>
+      </main>
+    );
+  }
+
+  const cuisines = Array.from(
+    new Set(
+      recipes
+        .map((recipe) => recipe.cuisine)
+        .filter((value): value is string => Boolean(value))
+    )
+  ).sort((first, second) => first.localeCompare(second));
 
   function getSuggestions() {
-    const filteredRecipes = mockRecipes.filter((recipe) => {
-      const matchesPreferences =
-        preferences === "All" || recipe.preferences.includes(preferences);
-      const matchesRestrictions =
-        restrictions === "None" || recipe.restrictions.includes(restrictions);
+    const filteredRecipes = recipes.filter((recipe) => {
+      const matchesCuisine = cuisine === "All" || recipe.cuisine === cuisine;
       const matchesDifficulty =
         difficulty === "All" || recipe.difficulty === difficulty;
-      const matchesTime = recipe.time <= maxTime;
+      const matchesTime = recipe.cookingTime <= maxTime;
 
-      return (
-        matchesPreferences &&
-        matchesRestrictions &&
-        matchesDifficulty &&
-        matchesTime
-      );
+      return matchesCuisine && matchesDifficulty && matchesTime;
     });
 
     setResults(filteredRecipes.slice(0, 3));
   }
 
   function getRandomRecipe() {
-    const randomIndex = Math.floor(Math.random() * mockRecipes.length);
-    setResults([mockRecipes[randomIndex]]);
+    if (recipes.length === 0) {
+      setResults([]);
+      return;
+    }
+
+    const filteredRecipes = recipes.filter((recipe) => {
+      const matchesCuisine = cuisine === "All" || recipe.cuisine === cuisine;
+      const matchesDifficulty =
+        difficulty === "All" || recipe.difficulty === difficulty;
+      const matchesTime = recipe.cookingTime <= maxTime;
+
+      return matchesCuisine && matchesDifficulty && matchesTime;
+    });
+
+    if (filteredRecipes.length === 0) {
+      setResults([]);
+      return;
+    }
+
+    const randomIndex = Math.floor(Math.random() * filteredRecipes.length);
+    setResults([filteredRecipes[randomIndex]]);
   }
 
   return (
@@ -126,35 +160,22 @@ export default function RecipePage() {
         <aside className="preferences-panel">
           <h2>Personalize suggestions</h2>
           <p className="panel-copy">
-            Choose a few filters to shape the recommendations.
+            Choose from the recipes currently available in the backend catalog.
           </p>
 
           <div className="filter-group">
-            <label htmlFor="preferences">Preferences</label>
+            <label htmlFor="cuisine">Cuisine</label>
             <select
-              id="preferences"
-              value={preferences}
-              onChange={(event) => setPreferences(event.target.value)}
+              id="cuisine"
+              value={cuisine}
+              onChange={(event) => setCuisine(event.target.value)}
             >
               <option value="All">All</option>
-              <option value="Vegetarian">Vegetarian</option>
-              <option value="Vegan">Vegan</option>
-              <option value="Pescetarian">Pescetarian</option>
-              <option value="High Protein">High Protein</option>
-            </select>
-          </div>
-
-          <div className="filter-group">
-            <label htmlFor="restrictions">Restrictions</label>
-            <select
-              id="restrictions"
-              value={restrictions}
-              onChange={(event) => setRestrictions(event.target.value)}
-            >
-              <option value="None">None</option>
-              <option value="Nut Free">Nut Free</option>
-              <option value="Dairy Free">Dairy Free</option>
-              <option value="Gluten Free">Gluten Free</option>
+              {cuisines.map((option) => (
+                <option key={option} value={option}>
+                  {option}
+                </option>
+              ))}
             </select>
           </div>
 
@@ -166,9 +187,9 @@ export default function RecipePage() {
               onChange={(event) => setDifficulty(event.target.value)}
             >
               <option value="All">All</option>
-              <option value="Easy">Easy</option>
-              <option value="Medium">Medium</option>
-              <option value="Hard">Hard</option>
+              <option value="EASY">Easy</option>
+              <option value="MEDIUM">Medium</option>
+              <option value="HARD">Hard</option>
             </select>
           </div>
 
@@ -190,6 +211,7 @@ export default function RecipePage() {
               type="button"
               className="primary-button"
               onClick={getSuggestions}
+              disabled={loading || recipes.length === 0}
             >
               Get suggestions
             </button>
@@ -197,6 +219,7 @@ export default function RecipePage() {
               type="button"
               className="ghost-button"
               onClick={getRandomRecipe}
+              disabled={loading || recipes.length === 0}
             >
               I&apos;m feeling lucky
             </button>
@@ -207,32 +230,43 @@ export default function RecipePage() {
           <div className="results-heading">
             <h2>Recipe results</h2>
             <p>
-              {results.length === 0
+              {loading
+                ? "Loading recipes from the backend..."
+                : results.length === 0
                 ? "No recipes generated yet."
                 : `Showing ${results.length} recipe${results.length > 1 ? "s" : ""}.`}
             </p>
           </div>
 
-          {results.length === 0 ? (
+          {error ? (
             <div className="empty-results">
-              <p>Choose your preferences and generate dinner suggestions.</p>
+              <p>{error}</p>
+            </div>
+          ) : loading ? (
+            <div className="empty-results">
+              <p>Loading recipes from `backend/src/main/resources/recipes.json`.</p>
+            </div>
+          ) : results.length === 0 ? (
+            <div className="empty-results">
+              <p>Choose your filters and generate dinner suggestions.</p>
             </div>
           ) : (
             <div className="recipe-grid">
               {results.map((recipe) => (
-                <article className="recipe-result-card" key={recipe.id}>
+                <article className="recipe-result-card" key={recipe.name}>
                   <p className="recipe-meta">
-                    {recipe.time} min | {recipe.difficulty}
+                    {recipe.cookingTime} min | {toDifficultyLabel(recipe.difficulty)}
                   </p>
-                  <h3>{recipe.title}</h3>
-                  <p>{recipe.description}</p>
+                  <h3>{recipe.name}</h3>
+                  <p>{recipe.instructions}</p>
 
                   <div className="recipe-tags">
-                    {recipe.tags.map((tag) => (
-                      <span className="recipe-tag" key={tag}>
-                        {tag}
-                      </span>
-                    ))}
+                    {recipe.cuisine ? (
+                      <span className="recipe-tag">{recipe.cuisine}</span>
+                    ) : null}
+                    <span className="recipe-tag">
+                      {toDifficultyLabel(recipe.difficulty)}
+                    </span>
                   </div>
                 </article>
               ))}
